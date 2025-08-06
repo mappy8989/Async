@@ -23,4 +23,6 @@ int main() {
             }
         });
     }
+
+    std::println("Hello Async!");
 }
