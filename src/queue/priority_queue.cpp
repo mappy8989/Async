@@ -24,13 +24,44 @@ void PriorityQueue::push(TaskPriority priority, std::function<void()> task) {
 std::optional<std::function<void()>> PriorityQueue::pop() {
     std::unique_lock<std::mutex> lock(mutex_);
 
-    if (auto it = map_.find(TaskPriority::High); it != map_.end()) {
-        return it->second->try_pop();
-    } else if (auto it = map_.find(TaskPriority::Normal); it != map_.end()) {
-        return it->second->try_pop();
+    auto check_queues = [this]() -> std::pair<bool, std::optional<std::function<void()>>> {
+        if (auto it = map_.find(TaskPriority::High); it != map_.end()) {
+            return std::make_pair(true, it->second->try_pop());
+        } else if (auto it = map_.find(TaskPriority::Normal); it != map_.end()) {
+            return std::make_pair(true, it->second->try_pop());
+        }
+
+        return std::make_pair(false, std::nullopt);
+    };
+
+    std::function<void()> func;
+
+    cond_.wait(lock, [this, &check_queues, &func] {
+        auto get_from_queue = check_queues();
+        if ((!get_from_queue.first || !get_from_queue.second.has_value()) && is_active_) {
+            return false;
+        } else if (get_from_queue.first && get_from_queue.second.has_value()) {
+            func = std::move(get_from_queue.second.value());
+            return true;
+        } else if (!is_active_) {
+            return true;
+        }
+
+        return false;
+    });
+
+    if (!is_active_) {
+        return std::nullopt;
     }
+
+    return func;
 }
 
-void shutdown() {}
+void PriorityQueue::shutdown() {
+    std::lock_guard lock(mutex_);
+    is_active_ = false;
+
+    cond_.notify_one();
+}
 
 }  // namespace dispatcher::queue
