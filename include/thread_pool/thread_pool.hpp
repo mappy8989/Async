@@ -1,9 +1,30 @@
 #pragma once
+#include <functional>
+#include <mutex>
+#include <thread>
+#include <vector>
+
+#include "queue/priority_queue.hpp"
+#include "types.hpp"
 
 namespace dispatcher::thread_pool {
 
 class ThreadPool {
-  // здесь ваш код
+public:
+    explicit ThreadPool(std::shared_ptr<dispatcher::queue::PriorityQueue> prio_queue,
+                        int threads_num = std::thread::hardware_concurrency());
+    void push(TaskPriority priority, std::function<void()> task);
+    ~ThreadPool();
+
+private:
+    void ThreadsStart(void);
+    void Worker(void);
+
+    bool is_active_;
+    std::vector<std::jthread> thrds_;
+    int threads_num_;
+    std::shared_ptr<dispatcher::queue::PriorityQueue> prio_queue_;
+    std::mutex mutex_;
 };
 
-} // namespace dispatcher::thread_pool
+}  // namespace dispatcher::thread_pool
