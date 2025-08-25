@@ -20,7 +20,7 @@ public:
 
     std::optional<std::function<void()>> try_pop() override;
 
-    ~BoundedQueue() override;
+    ~BoundedQueue() override {};
 };
 
 }  // namespace dispatcher::queue

@@ -2,9 +2,11 @@
 
 namespace dispatcher::thread_pool {
 
-ThreadPool::ThreadPool(std::shared_ptr<dispatcher::queue::PriorityQueue> prio_queue, int threads_num)
+ThreadPool::ThreadPool(std::shared_ptr<dispatcher::queue::PriorityQueue> prio_queue,
+                       int threads_num)
     : prio_queue_(std::move(prio_queue)), threads_num_(threads_num) {
     thrds_.reserve(threads_num);
+    ThreadsStart();
 }
 
 void ThreadPool::push(TaskPriority priority, std::function<void()> task) {
@@ -29,7 +31,7 @@ void ThreadPool::ThreadsStart(void) {
 }
 
 void ThreadPool::Worker(void) {
-    std::unique_lock<std::mutex> lock(mutex_);
+    //  std::unique_lock<std::mutex> lock(mutex_);
     while (is_active_) {
         std::optional<std::function<void()>> task = prio_queue_->pop();
 

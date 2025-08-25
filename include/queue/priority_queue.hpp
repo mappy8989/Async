@@ -25,7 +25,7 @@ class PriorityQueue {
     bool is_active_ = true;
 
 public:
-    explicit PriorityQueue(std::map<TaskPriority, QueueOptions> &prio_map);
+    explicit PriorityQueue(std::map<TaskPriority, QueueOptions> &&prio_map);
 
     void push(TaskPriority priority, std::function<void()> task);
     // block on pop until shutdown is called
@@ -34,7 +34,7 @@ public:
 
     void shutdown();
 
-    ~PriorityQueue();
+    ~PriorityQueue() {}
 };
 
 }  // namespace dispatcher::queue

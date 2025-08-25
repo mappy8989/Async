@@ -20,9 +20,9 @@ private:
     void ThreadsStart(void);
     void Worker(void);
 
-    bool is_active_;
+    bool is_active_ = true;
     std::vector<std::jthread> thrds_;
-    int threads_num_;
+    size_t threads_num_;
     std::shared_ptr<dispatcher::queue::PriorityQueue> prio_queue_;
     std::mutex mutex_;
 };

@@ -5,12 +5,14 @@
 
 namespace dispatcher::queue {
 
-PriorityQueue::PriorityQueue(std::map<TaskPriority, QueueOptions> &prio_map) {
-    for (auto &elem : prio_map) {
+PriorityQueue::PriorityQueue(std::map<TaskPriority, QueueOptions> &&prio_map) {
+    for (auto &&elem : prio_map) {
         if (elem.second.bounded) {
-            map_.emplace(elem.first, std::make_unique<dispatcher::queue::BoundedQueue>(elem.second.capacity.value()));
+            map_.emplace(elem.first, std::make_unique<dispatcher::queue::BoundedQueue>(
+                                         elem.second.capacity.value_or(0)));
         } else {
-            map_.emplace(elem.first, std::make_unique<dispatcher::queue::UnboundedQueue>(elem.second.capacity.value()));
+            map_.emplace(elem.first, std::make_unique<dispatcher::queue::UnboundedQueue>(
+                                         elem.second.capacity.value_or(0)));
         }
     }
 }
