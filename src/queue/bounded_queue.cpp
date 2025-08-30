@@ -18,8 +18,8 @@ std::optional<std::function<void()>> BoundedQueue::try_pop() {
     }
 
     std::function func = std::move(queue_.front());
-
     queue_.pop_front();
+    not_full_.notify_one();
 
     return func;
 }

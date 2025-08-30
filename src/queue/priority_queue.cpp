@@ -20,6 +20,8 @@ PriorityQueue::PriorityQueue(std::map<TaskPriority, QueueOptions> &&prio_map) {
 void PriorityQueue::push(TaskPriority priority, std::function<void()> task) {
     if (auto it = map_.find(priority); it != map_.end()) {
         it->second->push(task);
+    } else {
+        asm("nop");
     }
 }
 
@@ -63,7 +65,7 @@ void PriorityQueue::shutdown() {
     std::lock_guard lock(mutex_);
     is_active_ = false;
 
-    cond_.notify_one();
+    cond_.notify_all();
 }
 
 }  // namespace dispatcher::queue
