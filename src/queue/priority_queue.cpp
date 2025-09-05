@@ -8,11 +8,10 @@ namespace dispatcher::queue {
 PriorityQueue::PriorityQueue(std::map<TaskPriority, QueueOptions> &&prio_map) {
     for (auto &&elem : prio_map) {
         if (elem.second.bounded) {
-            map_.emplace(elem.first, std::make_unique<dispatcher::queue::BoundedQueue>(
-                                         elem.second.capacity.value_or(0)));
+            map_.emplace(elem.first,
+                         std::make_unique<dispatcher::queue::BoundedQueue>(elem.second.capacity.value_or(0)));
         } else {
-            map_.emplace(elem.first, std::make_unique<dispatcher::queue::UnboundedQueue>(
-                                         elem.second.capacity.value_or(0)));
+            map_.emplace(elem.first, std::make_unique<dispatcher::queue::UnboundedQueue>());
         }
     }
 }
@@ -30,8 +29,12 @@ std::optional<std::function<void()>> PriorityQueue::pop() {
 
     auto check_queues = [this]() -> std::pair<bool, std::optional<std::function<void()>>> {
         if (auto it = map_.find(TaskPriority::High); it != map_.end()) {
-            return std::make_pair(true, it->second->try_pop());
-        } else if (auto it = map_.find(TaskPriority::Normal); it != map_.end()) {
+            std::optional<std::function<void()>> temp_func = it->second->try_pop();
+            if (temp_func.has_value()) {
+                return std::make_pair(true, temp_func.value());
+            }
+        }
+        if (auto it = map_.find(TaskPriority::Normal); it != map_.end()) {
             return std::make_pair(true, it->second->try_pop());
         }
 
@@ -44,7 +47,7 @@ std::optional<std::function<void()>> PriorityQueue::pop() {
         auto get_from_queue = check_queues();
         if ((!get_from_queue.first || !get_from_queue.second.has_value()) && is_active_) {
             return false;
-        } else if (get_from_queue.first && get_from_queue.second.has_value()) {
+        } else if (get_from_queue.first && get_from_queue.second.has_value() && is_active_) {
             func = std::move(get_from_queue.second.value());
             return true;
         } else if (!is_active_) {

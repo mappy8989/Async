@@ -11,7 +11,7 @@ class UnboundedQueue : public IQueue {
     std::mutex mutex_;
     // здесь ваш код
 public:
-    explicit UnboundedQueue(int capacity = 0) {}
+    explicit UnboundedQueue() {}
 
     void push(std::function<void()> task) override;
 

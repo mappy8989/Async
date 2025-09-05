@@ -22,7 +22,7 @@ class PriorityQueue {
     std::mutex mutex_;
     std::condition_variable cond_;
 
-    bool is_active_ = true;
+    bool is_active_ = false;
 
 public:
     explicit PriorityQueue(std::map<TaskPriority, QueueOptions> &&prio_map);

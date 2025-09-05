@@ -1,4 +1,5 @@
 #pragma once
+#include <condition_variable>
 #include <functional>
 #include <mutex>
 #include <thread>
@@ -25,6 +26,7 @@ private:
     size_t threads_num_;
     std::shared_ptr<dispatcher::queue::PriorityQueue> prio_queue_;
     std::mutex mutex_;
+    std::condition_variable cv_;
 };
 
 }  // namespace dispatcher::thread_pool
