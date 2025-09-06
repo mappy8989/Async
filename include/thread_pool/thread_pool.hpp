@@ -21,7 +21,9 @@ private:
     void ThreadsStart(void);
     void Worker(void);
 
-    bool is_active_ = true;
+    std::atomic<bool> is_start_ = false;
+    std::atomic<bool> is_active_ = true;
+
     std::vector<std::jthread> thrds_;
     size_t threads_num_;
     std::shared_ptr<dispatcher::queue::PriorityQueue> prio_queue_;

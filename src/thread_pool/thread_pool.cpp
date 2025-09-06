@@ -26,20 +26,19 @@ ThreadPool::~ThreadPool() {
     for (auto &worker : thrds_) {
         if (worker.joinable()) {
             worker.join();
-            std::println("joined");
         }
     }
 }
 
 void ThreadPool::ThreadsStart(void) {
-    is_active_ = true;
+    is_start_ = true;
     cv_.notify_all();
 }
 
 void ThreadPool::Worker(void) {
     std::unique_lock<std::mutex> lock(mutex_);
     cv_.wait(lock, [&]() {
-        if (is_active_)
+        if (is_start_)
             return true;
         return false;
     });
@@ -48,7 +47,7 @@ void ThreadPool::Worker(void) {
         std::optional<std::function<void()>> task = prio_queue_->pop();
 
         if (task.has_value()) {
-            task.value();
+            task.value()();
         } else {
             std::this_thread::yield();
         }

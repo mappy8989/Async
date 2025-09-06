@@ -1,5 +1,7 @@
-#include "queue/priority_queue.hpp"
+#include <print>
+
 #include "queue/bounded_queue.hpp"
+#include "queue/priority_queue.hpp"
 #include "queue/unbounded_queue.hpp"
 #include "types.hpp"
 
@@ -19,8 +21,6 @@ PriorityQueue::PriorityQueue(std::map<TaskPriority, QueueOptions> &&prio_map) {
 void PriorityQueue::push(TaskPriority priority, std::function<void()> task) {
     if (auto it = map_.find(priority); it != map_.end()) {
         it->second->push(task);
-    } else {
-        asm("nop");
     }
 }
 
@@ -41,13 +41,13 @@ std::optional<std::function<void()>> PriorityQueue::pop() {
         return std::make_pair(false, std::nullopt);
     };
 
-    std::function<void()> func;
+    std::optional<std::function<void()>> func = std::nullopt;
 
     cond_.wait(lock, [this, &check_queues, &func] {
         auto get_from_queue = check_queues();
         if ((!get_from_queue.first || !get_from_queue.second.has_value()) && is_active_) {
             return false;
-        } else if (get_from_queue.first && get_from_queue.second.has_value() && is_active_) {
+        } else if (get_from_queue.first && get_from_queue.second.has_value()) {
             func = std::move(get_from_queue.second.value());
             return true;
         } else if (!is_active_) {
@@ -58,7 +58,7 @@ std::optional<std::function<void()>> PriorityQueue::pop() {
     });
 
     if (!is_active_) {
-        return std::nullopt;
+        //    return std::nullopt;
     }
 
     return func;
