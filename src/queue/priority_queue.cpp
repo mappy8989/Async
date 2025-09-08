@@ -47,7 +47,7 @@ std::optional<std::function<void()>> PriorityQueue::pop() {
         auto get_from_queue = check_queues();
         if ((!get_from_queue.first || !get_from_queue.second.has_value()) && is_active_) {
             return false;
-        } else if (get_from_queue.first && get_from_queue.second.has_value()) {
+        } else if ((get_from_queue.first && get_from_queue.second.has_value())) {
             func = std::move(get_from_queue.second.value());
             return true;
         } else if (!is_active_) {
@@ -56,10 +56,6 @@ std::optional<std::function<void()>> PriorityQueue::pop() {
 
         return false;
     });
-
-    if (!is_active_) {
-        //    return std::nullopt;
-    }
 
     return func;
 }
