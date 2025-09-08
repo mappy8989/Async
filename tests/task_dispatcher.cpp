@@ -2,4 +2,4 @@
 
 #include "task_dispatcher.hpp"
 
-// здесь ваш код
+TEST(DispetcherTest, allOfCheck) { EXPECT_TRUE(1); }

@@ -1,6 +1,8 @@
 #include <chrono>
 #include <climits>
+#include <condition_variable>
 #include <iostream>
+#include <mutex>
 #include <print>
 #include <thread>
 
@@ -10,7 +12,7 @@
 using namespace dispatcher;
 
 int main() {
-    TaskDispatcher td(std::thread::hardware_concurrency());
+    TaskDispatcher td((size_t)std::thread::hardware_concurrency());
     std::vector<std::jthread> threads;
 
     for (int i = 0; i < 5; ++i) {
@@ -23,4 +25,8 @@ int main() {
             }
         });
     }
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    std::println("Hello Async!");
 }

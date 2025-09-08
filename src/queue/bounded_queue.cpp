@@ -2,6 +2,26 @@
 
 namespace dispatcher::queue {
 
-// здесь ваш код
+void BoundedQueue::push(std::function<void()> task) {
+    std::unique_lock<std::mutex> lock(mutex_);
 
-} // namespace dispatcher::queue
+    not_full_.wait(lock, [this] { return capacity_ > queue_.size(); });
+
+    queue_.push_back(std::move(task));
+}
+
+std::optional<std::function<void()>> BoundedQueue::try_pop() {
+    std::unique_lock<std::mutex> lock(mutex_);
+
+    if (queue_.empty()) {
+        return std::nullopt;
+    }
+
+    std::function func = std::move(queue_.front());
+    queue_.pop_front();
+    not_full_.notify_one();
+
+    return func;
+}
+
+}  // namespace dispatcher::queue
